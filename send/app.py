@@ -1,10 +1,14 @@
-#send
 import pika
 import time
 
-time.sleep(18)
+time.sleep(10) 
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(
+        host='rabbitmq',
+        credentials=pika.PlainCredentials('admin', 'admin')
+    )
+)
 channel = connection.channel()
 channel.queue_declare(queue='hello')
 
