@@ -1,0 +1,16 @@
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+  sender:
+    build: ./send
+    depends_on:
+      - rabbitmq
+
+  receiver:
+    build: ./recieve
+    depends_on:
+      - rabbitmq
