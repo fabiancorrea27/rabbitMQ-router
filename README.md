@@ -119,7 +119,10 @@ A continuación, se muestran algunas capturas del proceso:
 ### 6. Resultado final
 ![Final Result](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/6.png)
 
-### 6. Resultado final
+### 7. Vista desde RabbitMQ
 ![Final Result](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/7.png)
+
+### 8. Resultado Logs
+![Final Result](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/8.png)
 
 
