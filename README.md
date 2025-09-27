@@ -1,36 +1,56 @@
-<img width="793" height="467" alt="image" src="https://github.com/user-attachments/assets/d3fb5d70-e882-43dc-b2bc-699b52d27d22" /># RabbitMQ_1
-Capitulo 1 de RabbitMQ con python
+# RabbitMQ con Python - Capítulo 1
 
-Para esto se requiere tener corriendo RabbitMQ en un contenedor de docker.
+Este proyecto demuestra los conceptos básicos de **RabbitMQ** utilizando **Python**, incluyendo el envío y recepción de mensajes.
+
+## Requisitos
+
+- Docker
+- Python 3.6+
+- Biblioteca `pika`
+
+## Instalación
+
+### 1. Ejecutar RabbitMQ con Docker
+
+```bash
 # latest RabbitMQ 4.x
 docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:4-management
+```
 
-<img width="822" height="311" alt="image" src="" />
-Se requiere de la libreria pika en python: 
+### 2. Instalar la biblioteca `pika`
 
-se puede instalar con: 
+```bash
 python -m pip install pika --upgrade
+```
 
-y si no funciona buscar si se encuentar en el administrador de paquetes (apt)
-e inatalarla si no se quiere instalar en ambiente virtual.
-<img width="793" height="467" alt="image" src="" />
+> **Alternativa:** Si usas un sistema basado en Debian/Ubuntu, puedes buscar el paquete en `apt`.
 
-Primera parte - Sending 
+## Ejecución
 
+### Parte 1: Enviar Mensajes (`send.py`)
+
+```python
 import pika
 
 connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
 channel = connection.channel()
+
 channel.queue_declare(queue='hello')
-channel.basic_publish(exchange='',routing_key='hello',body='Hello World!')
+channel.basic_publish(
+    exchange='',
+    routing_key='hello',
+    body='Hello World!'
+)
 print(" [x] Sent 'Hello World!'")
 connection.close()
+```
 
-<img width="655" height="123" alt="image" src="https:" />
+### Parte 2: Recibir Mensajes (`receive.py`)
 
-Segunda parte - Recieve
-
-import pika, sys, os
+```python
+import pika
+import sys
+import os
 
 def main():
     connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
@@ -46,15 +66,60 @@ def main():
     print(' [*] Waiting for messages. To exit press CTRL+C')
     channel.start_consuming()
 
-<img width="713" height="115" alt="image" src="" />
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print('Interrupted')
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
+```
 
-Tercera parte - Putting it all together
+## Docker Compose
 
-<img width="930" height="100" alt="image" src="" />
+Se incluye un archivo `docker-compose.yml` para facilitar la ejecución de los ejemplos en un entorno contenedorizado.
 
-Cuarta parte - aplicar lo aprendido
+```yaml
+version: '3.8'
 
-Construimos un docker compose con estos porgramas
+services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
+volumes:
+  rabbitmq_data:
+```
+
+## Capturas de Pantalla
+
+A continuación, se muestran algunas capturas del proceso:
+
+### 1. Inicio de RabbitMQ en Docker
+![RabbitMQ Docker](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/1.png)
+
+### 2. Interfaz de Administración de RabbitMQ
+![RabbitMQ Management](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/2.png)
+
+### 3. Instalación de Pika
+![Pika Installation](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/3.png)
+
+### 4. Ejecución del script de envío
+![Send Script](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/4.png)
+
+### 5. Ejecución del script de recepción
+![Receive Script](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/5.png)
+
+### 6. Resultado final
+![Final Result](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/6.png)
+
+### 6. Resultado final
+![Final Result](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/7.png)
 
 

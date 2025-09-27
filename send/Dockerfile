@@ -1,8 +1,9 @@
 FROM python:3.11-slim
 
 WORKDIR /app
-COPY app.py /app
 
-RUN pip install pika
+RUN pip install --no-cache-dir pika==1.3.2
+
+COPY app.py .
 
 CMD ["python", "app.py"]
