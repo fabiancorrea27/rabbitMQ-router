@@ -1,5 +1,8 @@
 # RabbitMQ con Python - Routing
 
+- **Walter Mauricio Alfonso Martinez**
+- **Fabian Leonardo Correa Rojas**
+
 Este proyecto demuestra los conceptos básicos de **RabbitMQ** utilizando **Python**, incluyendo el routing de los mensajes mediante exchange y colas
 
 ## Requisitos
