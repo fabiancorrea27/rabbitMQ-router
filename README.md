@@ -1,6 +1,6 @@
 # RabbitMQ con Python - Capítulo 1
 
-Este proyecto demuestra los conceptos básicos de **RabbitMQ** utilizando **Python**, incluyendo el envío y recepción de mensajes.
+Este proyecto demuestra los conceptos básicos de **RabbitMQ** utilizando **Python**, incluyendo el routing de los mensajes mediante exchange y colas
 
 ## Requisitos
 
@@ -27,102 +27,71 @@ python -m pip install pika --upgrade
 
 ## Ejecución
 
-### Parte 1: Enviar Mensajes (`send.py`)
-
-```python
-import pika
-
-connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-channel = connection.channel()
-
-channel.queue_declare(queue='hello')
-channel.basic_publish(
-    exchange='',
-    routing_key='hello',
-    body='Hello World!'
-)
-print(" [x] Sent 'Hello World!'")
-connection.close()
-```
-
-### Parte 2: Recibir Mensajes (`receive.py`)
+### Parte 1: Emisor (`send.py`)
 
 ```python
 import pika
 import sys
-import os
 
-def main():
-    connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-    channel = connection.channel()
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host='localhost'))
+channel = connection.channel()
 
-    channel.queue_declare(queue='hello')
+channel.exchange_declare(exchange='direct_logs', exchange_type='direct')
 
-    def callback(ch, method, properties, body):
-        print(f" [x] Received {body}")
-
-    channel.basic_consume(queue='hello', on_message_callback=callback, auto_ack=True)
-
-    print(' [*] Waiting for messages. To exit press CTRL+C')
-    channel.start_consuming()
-
-if __name__ == '__main__':
-    try:
-        main()
-    except KeyboardInterrupt:
-        print('Interrupted')
-        try:
-            sys.exit(0)
-        except SystemExit:
-            os._exit(0)
+severity = sys.argv[1] if len(sys.argv) > 1 else 'info'
+message = ' '.join(sys.argv[2:]) or 'Hello World!'
+channel.basic_publish(
+    exchange='direct_logs', routing_key=severity, body=message)
+print(f" [x] Sent {severity}:{message}")
+connection.close()
 ```
 
-## Docker Compose
+### Parte 2: Receptor (`receive.py`)
 
-Se incluye un archivo `docker-compose.yml` para facilitar la ejecución de los ejemplos en un entorno contenedorizado.
+```python
+#!/usr/bin/env python
+import pika
+import sys
 
-```yaml
-version: '3.8'
+connection = pika.BlockingConnection(
+    pika.ConnectionParameters(host='localhost'))
+channel = connection.channel()
 
-services:
-  rabbitmq:
-    image: rabbitmq:4-management
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+channel.exchange_declare(exchange='direct_logs', exchange_type='direct')
 
-volumes:
-  rabbitmq_data:
+result = channel.queue_declare(queue='', exclusive=True)
+queue_name = result.method.queue
+
+severities = sys.argv[1:]
+if not severities:
+    sys.stderr.write("Usage: %s [info] [warning] [error]\n" % sys.argv[0])
+    sys.exit(1)
+
+for severity in severities:
+    channel.queue_bind(
+        exchange='direct_logs', queue=queue_name, routing_key=severity)
+
+print(' [*] Waiting for logs. To exit press CTRL+C')
+
+
+def callback(ch, method, properties, body):
+    print(f" [x] {method.routing_key}:{body}")
+
+
+channel.basic_consume(
+    queue=queue_name, on_message_callback=callback, auto_ack=True)
+
+channel.start_consuming()
 ```
 
 ## Capturas de Pantalla
 
 A continuación, se muestran algunas capturas del proceso:
 
-### 1. Inicio de RabbitMQ en Docker
-![RabbitMQ Docker](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/1.png)
+### 1. Ejecución del script de envío
+![Send Script](./images/sender.png)
 
-### 2. Interfaz de Administración de RabbitMQ
-![RabbitMQ Management](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/2.png)
-
-### 3. Instalación de Pika
-![Pika Installation](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/3.png)
-
-### 4. Ejecución del script de envío
-![Send Script](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/4.png)
-
-### 5. Ejecución del script de recepción
-![Receive Script](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/5.png)
-
-### 6. Resultado final
-![Final Result](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/6.png)
-
-### 7. Vista desde RabbitMQ
-![Final Result](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/7.png)
-
-### 8. Resultado Logs
-![Final Result](https://github.com/WBOK-GM/RabbitMQ_1/blob/main/images/8.png)
-
+### 2. Ejecución del script de recepción
+![Receive Script](./images/receiver.png)
 
