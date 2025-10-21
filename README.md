@@ -1,4 +1,4 @@
-# RabbitMQ con Python - Capítulo 1
+# RabbitMQ con Python - Routing
 
 Este proyecto demuestra los conceptos básicos de **RabbitMQ** utilizando **Python**, incluyendo el routing de los mensajes mediante exchange y colas
 
